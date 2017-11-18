@@ -74,7 +74,7 @@ noble.on('discover', function(peripheral) {
 const discoverCharacteristics = (s) => {
 
   s.discoverCharacteristics([], (error, characteristics) => {
-    characteristics.forEach((characteristic) => {
+    characteristics.forEach((c) => {
       console.log('discovered characteristics', c.uuid, c.name, c.properties);
     });
   });
