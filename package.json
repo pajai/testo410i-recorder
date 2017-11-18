@@ -9,7 +9,7 @@
   "author": "Patrick Jayet",
   "license": "ISC",
   "dependencies": {
-    "noble": "^1.8.1"
+    "noble": "^1.8.1",
+    "prompt": "^1.0.0"
   }
 }
-
