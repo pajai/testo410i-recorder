@@ -28,27 +28,42 @@ noble.on('discover', function(peripheral) {
       else {
         console.log("connected", peripheral.advertisement.localName)        
 
+        peripheral.discoverServices(['fff0'], (error, services) => {
+          if (error) { console.log('error while discovering services', error); }
+          else {
+            if (services.length !== 1) {
+              console.log('did not find 1 service, found', services.length);
+            }
+            else {
+              var s = services[0];
+              console.log('service', s);
+            }
+          }
+        });
+
+
         //peripheral.discoverAllServicesAndCharacteristics(function(error, services, characteristics){
 
-        peripheral.discoverSomeServicesAndCharacteristics([], ['2902'], function(error, services, characteristics) {
+        // peripheral.discoverSomeServicesAndCharacteristics([], ['2902'], function(error, services, characteristics) {
+        //
+        //   //console.log('discovered services & characteristics', error, services, characteristics);
+        //
+        //   if (error) {
+        //     console.log('an error occured during discovery', error);
+        //   }
+        //
+        //   for (let i = 0; i < characteristics.length; i++) {
+        //     var c = characteristics[i];
+        //     console.log('discovered characteristic', c.name, c.uuid, c.properties);
+        //
+        //     readCharacteristic(c);
+        //     startNotify(c);
+        //     subscribe(c);
+        //
+        //   }
+        //
+        // });
 
-          //console.log('discovered services & characteristics', error, services, characteristics);
-
-          if (error) {
-            console.log('an error occured during discovery', error);
-          }
-
-          for (let i = 0; i < characteristics.length; i++) {
-            var c = characteristics[i];
-            console.log('discovered characteristic', c.name, c.uuid, c.properties); 
-
-            readCharacteristic(c);
-            startNotify(c);
-            subscribe(c);
-
-          }
-
-        });
       }
     });
 
