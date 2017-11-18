@@ -75,7 +75,7 @@ const discoverCharacteristics = (s) => {
 
   s.discoverCharacteristics([], (error, characteristics) => {
     characteristics.forEach((c) => {
-      console.log('discovered characteristics', c.uuid, c.name, c.properties);
+      console.log('discovered characteristic', c.uuid, c.name, c.properties);
       startNotify(c);
       subscribe(c);
     });
@@ -85,9 +85,9 @@ const discoverCharacteristics = (s) => {
 
 const startNotify = (c) => {
   if (c.uuid === 'fff1') {
-    console.log('enabling notification on service fff2');
+    console.log('enabling notification on service fff1');
 
-    const buf = Buffer.allocUnsafe(1);
+    const buf = Buffer.allocUnsafe(2);
     buf.writeUInt8(0x1, 0);
     console.log('buffer constructed', buf);
 
@@ -117,7 +117,7 @@ const subscribe = (c) => {
     return;
   }
 
-  console.log('discovered characteristic', c.name, c.uuid, c.properties);
+  console.log('subscribing to characteristic', c.name, c.uuid, c.properties);
   charList.push(c);
 
   c.subscribe(function(error){
