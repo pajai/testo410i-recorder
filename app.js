@@ -1,6 +1,7 @@
 "use strict";
 
 var noble = require('noble');
+var prompt = require('prompt');
 
 console.log('started');
 
@@ -76,19 +77,42 @@ const discoverCharacteristics = (s) => {
   s.discoverCharacteristics([], (error, characteristics) => {
     characteristics.forEach((c) => {
       console.log('discovered characteristic', c.uuid, c.name, c.properties);
-      startNotify(c);
-      subscribe(c);
+      if (c.uuid === 'fff1') {
+        cfff1 = c;
+      }
+      else if (s.uuid === 'fff2') {
+        cfff2 = c;
+        subscribe(c);
+      }
     });
   });
 
 };
 
-const startNotify = (c) => {
+var cfff1 = undefined;
+var cfff2 = undefined;
+
+function ask() {
+  if (!sfff1 || !sfff2) {
+    setTimeout(ask, 1000);
+  }
+
+  prompt.get(['nb'], function(err, result) {
+    var nb = result.nb;
+
+    startNotify(cfff1, nb);
+    ask();
+  });
+}
+
+ask();
+
+const startNotify = (c, nb) => {
   if (c.uuid === 'fff1') {
     console.log('enabling notification on service fff1');
 
     const buf = Buffer.allocUnsafe(2);
-    buf.writeUInt16BE(0x1, 0);
+    buf.writeUInt16BE(nb, 0);
     console.log('buffer constructed', buf);
 
     c.write(buf, true, (error) => {
