@@ -36,7 +36,8 @@ noble.on('discover', function(peripheral) {
             }
             else {
               var s = services[0];
-              console.log('service', s);
+              console.log('discovered service', s.uuid);
+              discoverCharacteristics(s);
             }
           }
         });
@@ -69,6 +70,16 @@ noble.on('discover', function(peripheral) {
 
   }
 });
+
+const discoverCharacteristics = (s) => {
+
+  s.discoverCharacteristics([], (error, characteristics) => {
+    characteristics.forEach((characteristic) => {
+      console.log('discovered characteristics', c.uuid, c.name, c.properties);
+    });
+  });
+
+};
 
 const startNotify = (c) => {
   if (c.uuid === '2902') {
