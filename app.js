@@ -28,7 +28,10 @@ noble.on('discover', function(peripheral) {
       else {
         console.log("connected", peripheral.advertisement.localName)        
 
-        peripheral.discoverAllServicesAndCharacteristics(function(error, services, characteristics){
+        //peripheral.discoverAllServicesAndCharacteristics(function(error, services, characteristics){
+
+        peripheral.discoverSomeServicesAndCharacteristics([], ['2902'], function(error, services, characteristics) {
+
           //console.log('discovered services & characteristics', error, services, characteristics);
 
           if (error) {
@@ -37,12 +40,12 @@ noble.on('discover', function(peripheral) {
 
           for (let i = 0; i < characteristics.length; i++) {
             var c = characteristics[i];
-            if (c.properties.indexOf('indicate') !== -1) {
-              console.log('discovered characteristic', c.name, c.uuid, c.properties);
+            console.log('discovered characteristic', c.name, c.uuid, c.properties); 
 
-              charList.push(c);
-              subscribe(charList.length - 1);
-            }
+            readCharacteristic(c);
+            startNotify(c);
+            subscribe(c);
+
           }
 
         });
@@ -52,22 +55,65 @@ noble.on('discover', function(peripheral) {
   }
 });
 
-const subscribe = (idx) => {
-  var c = charList[idx];
+const startNotify = (c) => {
+  if (c.uuid === '2902') {
+    console.log('enabling notification on service fff2');
 
-  c.once('notify', function(state){ console.log('notify change for', c.name, c.uuid, c.properties, state); });
+    const buf = Buffer.allocUnsafe(4);
+    buf.writeUInt32BE(0x1, 0);
+    console.log('buffer constructed', buf);
+
+    c.write(buf, true, (error) => { console.log('error while writing 2902', error); });
+  }
+}
+
+const readCharacteristic = (c) => {
+  if (c.properties.indexOf('read') !== -1) {
+    c.read((error, data) => {
+      if (error) { console.log('error while reading char', c.name, c.uuid, c.properties, error); }
+      else { console.log('read value', data.toString('utf8'), c.name, c.uuid, c.properties); }
+    });
+
+    c.once('descriptorsDiscover', function(descriptors){
+      console.log('descriptors discovered', descriptors);
+    });
+
+  } 
+};
+
+const subscribe = (c) => {
+  if (c.properties.indexOf('notify') === -1 || c.properties.indexOf('indicate') === -1) {
+    return;
+  }
+
+  console.log('discovered characteristic', c.name, c.uuid, c.properties);
+  charList.push(c);
+  //c = charList[idx];
+
+  //c.once('notify', function(state){ console.log('notify change for', c.name, c.uuid, c.properties, state); });
+
+  c.notify(true, function(error) { 
+    console.log('notified', c.name, c.uuid, c.properties, error ? error : 'no error'); 
+  });
 
   c.on('data', function(data, isNotification){
     console.log('received data', data, 'for', c.name, c.uuid);
   });
 
-  c.subscribe(function(error){ 
-    console.log('subscribed', c.name, c.uuid, c.properties, error); 
+  c.on('read', function(data, isNotification){
+    console.log('received read', data, 'for', c.name, c.uuid);
   });
 
-  c.notify(true, function(error) { 
-    console.log('notified', c.name, c.uuid, c.properties, error); 
+/*
+  c.subscribe(function(error){ 
+    console.log('subscribed', c.name, c.uuid, c.properties, error ? error : 'no error'); 
   });
+ 
+  c.once('descriptorsDiscover', function(descriptors){
+    console.log('descriptors discovered', descriptors);
+  });
+*/
+
 };
 
 noble.on('scanStart', function() {
