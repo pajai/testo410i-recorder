@@ -88,7 +88,7 @@ const startNotify = (c) => {
     console.log('enabling notification on service fff1');
 
     const buf = Buffer.allocUnsafe(2);
-    buf.writeUInt8(0x1, 0);
+    buf.writeUInt16BE(0x1, 0);
     console.log('buffer constructed', buf);
 
     c.write(buf, true, (error) => {
