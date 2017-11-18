@@ -76,20 +76,25 @@ const discoverCharacteristics = (s) => {
   s.discoverCharacteristics([], (error, characteristics) => {
     characteristics.forEach((c) => {
       console.log('discovered characteristics', c.uuid, c.name, c.properties);
+      startNotify(c);
+      subscribe(c);
     });
   });
 
 };
 
 const startNotify = (c) => {
-  if (c.uuid === '2902') {
+  if (c.uuid === 'fff1') {
     console.log('enabling notification on service fff2');
 
-    const buf = Buffer.allocUnsafe(4);
-    buf.writeUInt32BE(0x1, 0);
+    const buf = Buffer.allocUnsafe(1);
+    buf.writeUInt8(0x1, 0);
     console.log('buffer constructed', buf);
 
-    c.write(buf, true, (error) => { console.log('error while writing 2902', error); });
+    c.write(buf, true, (error) => {
+      if (error) console.log('error while writing fff1', error);
+      else console.log('written to fff1');
+    });
   }
 }
 
@@ -108,33 +113,30 @@ const readCharacteristic = (c) => {
 };
 
 const subscribe = (c) => {
-  if (c.properties.indexOf('notify') === -1 || c.properties.indexOf('indicate') === -1) {
+  if (c.uuid !== 'fff2') {
     return;
   }
 
   console.log('discovered characteristic', c.name, c.uuid, c.properties);
   charList.push(c);
-  //c = charList[idx];
 
-  //c.once('notify', function(state){ console.log('notify change for', c.name, c.uuid, c.properties, state); });
-
-  c.notify(true, function(error) { 
-    console.log('notified', c.name, c.uuid, c.properties, error ? error : 'no error'); 
+  c.subscribe(function(error){
+    console.log('subscribed', c.name, c.uuid, c.properties, error ? error : 'no error');
   });
 
   c.on('data', function(data, isNotification){
     console.log('received data', data, 'for', c.name, c.uuid);
   });
 
-  c.on('read', function(data, isNotification){
-    console.log('received read', data, 'for', c.name, c.uuid);
-  });
+  // c.on('read', function(data, isNotification){
+  //   console.log('received read', data, 'for', c.name, c.uuid);
+  // });
 
 /*
-  c.subscribe(function(error){ 
-    console.log('subscribed', c.name, c.uuid, c.properties, error ? error : 'no error'); 
+  c.notify(true, function(error) {
+    console.log('notified', c.name, c.uuid, c.properties, error ? error : 'no error');
   });
- 
+
   c.once('descriptorsDiscover', function(descriptors){
     console.log('descriptors discovered', descriptors);
   });
