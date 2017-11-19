@@ -28,21 +28,7 @@ noble.on('discover', function(peripheral) {
       if (error) { console.log('error during connection', error); }
       else {
         console.log("connected", peripheral.advertisement.localName)        
-
-        peripheral.discoverServices(['fff0'], (error, services) => {
-          if (error) { console.log('error while discovering services', error); }
-          else {
-            if (services.length !== 1) {
-              console.log('did not find 1 service, found', services.length);
-            }
-            else {
-              var s = services[0];
-              console.log('discovered service', s.uuid);
-              discoverCharacteristics(s);
-            }
-          }
-        });
-
+        discoverService(peripheral);
 
         //peripheral.discoverAllServicesAndCharacteristics(function(error, services, characteristics){
 
@@ -72,6 +58,27 @@ noble.on('discover', function(peripheral) {
   }
 });
 
+var sfff0 = undefined;
+
+var cfff1 = undefined;
+var cfff2 = undefined;
+
+const discoverService = (p) => {
+  p.discoverServices(['fff0'], (error, services) => {
+    if (error) { console.log('error while discovering services', error); }
+    else {
+      if (services.length !== 1) {
+        console.log('did not find 1 service, found', services.length);
+      }
+      else {
+        sfff0 = services[0];
+        console.log('discovered service', sfff0.uuid);
+        discoverCharacteristics(sfff0);
+      }
+    }
+  });
+};
+
 const discoverCharacteristics = (s) => {
 
   s.discoverCharacteristics([], (error, characteristics) => {
@@ -80,7 +87,7 @@ const discoverCharacteristics = (s) => {
       if (c.uuid === 'fff1') {
         cfff1 = c;
       }
-      else if (s.uuid === 'fff2') {
+      else if (c.uuid === 'fff2') {
         cfff2 = c;
         subscribe(c);
       }
@@ -89,12 +96,13 @@ const discoverCharacteristics = (s) => {
 
 };
 
-var cfff1 = undefined;
-var cfff2 = undefined;
+prompt.start();
 
-function ask() {
-  if (!sfff1 || !sfff2) {
-    setTimeout(ask, 1000);
+const ask = () => {
+  if (cfff1 === undefined || cfff2 === undefined) {
+    console.log('waiting for prompt', cfff1 ? cfff1.uuid : '<undef>', cfff2 ? cfff2.uuid : '<undef>');
+    setTimeout(ask, 3000);
+    return;
   }
 
   prompt.get(['nb'], function(err, result) {
